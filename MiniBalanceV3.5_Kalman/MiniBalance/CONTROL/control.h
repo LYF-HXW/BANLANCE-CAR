@@ -6,7 +6,7 @@
 Œ“µƒÃ‘±¶–°µÍ£∫http://shop114407458.taobao.com/
 **************************************************************************/
 #define PI 3.14159265
-#define ZHONGZHI 3.5
+#define ZHONGZHI 0.24
 extern	int Balance_Pwm,Velocity_Pwm,Turn_Pwm;
 int EXTI15_10_IRQHandler(void);
 int balance(float angle,float gyro);

@@ -32,22 +32,22 @@ int EXTI3_IRQHandler(void)
 			//Read_Distane();                                                     //===获取超声波测量距离值         
 			Key();                                                              //===扫描按键状态 单击双击可以改变小车运行状态
  			Balance_Pwm =balance(Angle_Balance,Gyro_Balance);                   //===平衡PID控制	
-		  //Velocity_Pwm=velocity(Encoder_Left,Encoder_Right);                  //===速度环PID控制	 记住，速度反馈是正反馈，就是小车快的时候要慢下来就需要再跑快一点
+		  Velocity_Pwm=velocity(Encoder_Left,Encoder_Right);                  //===速度环PID控制	 记住，速度反馈是正反馈，就是小车快的时候要慢下来就需要再跑快一点
  	    //Turn_Pwm    =turn(Encoder_Left,Encoder_Right,Gyro_Turn);            //===转向环PID控制 
-			Velocity_Pwm = 0;
+			//Velocity_Pwm = 0;
 			Turn_Pwm = 0;
  		  Moto1=Balance_Pwm-Velocity_Pwm+Turn_Pwm;                            //===计算左轮电机最终PWM
  	  	Moto2=Balance_Pwm-Velocity_Pwm-Turn_Pwm;                            //===计算右轮电机最终PWM
    		Xianfu_Pwm();                                                       //===PWM限幅
 			if(Pick_Up(Acceleration_Z,Angle_Balance,Encoder_Left,Encoder_Right))//===检查是否小车被那起
-			Flag_Stop=1;	                                                      //===如果被拿起就关闭电机
+			{Flag_Stop=1;printf("Up");}                                       //===如果被拿起就关闭电机
 			if(Put_Down(Angle_Balance,Encoder_Left,Encoder_Right))              //===检查是否小车被放下
-			Flag_Stop=0;	                                                      //===如果被放下就启动电机
+			{Flag_Stop=0;printf("Down");}	                                                      //===如果被放下就启动电机
       if(Turn_Off(Angle_Balance)==0)                              //===如果不存在异常
  			{
 				Set_Pwm(Moto1,Moto2);                                               //===赋值给PWM寄存器  
 			}
-			printf("Angle:%f Motor1:%d Motor2 %d\r\n",Angle_Balance,Moto1,Moto2);  
+			//printf("Angle:%f Motor1:%d Motor2 %d\r\n",Angle_Balance,Moto1,Moto2);  
 			
 	}       	
 	 return 0;	  
@@ -59,9 +59,14 @@ int EXTI3_IRQHandler(void)
 返回  值：直立控制PWM
 作    者：平衡小车之家
 **************************************************************************/
+/**************************************************************************
+婉婉's arguments：PID：kp=650,kd=1.2;  ZHONGZHI：3.5
+阿帆's arguments：PID：kp=800,kd=1.25; ZHONGZHI：0.24
+Remember to multiply 0.6
+**************************************************************************/
 int balance(float Angle,float Gyro)
 {  
-   float Bias,kp=650,kd=1.2;
+   float Bias,kp=500,kd=1.1;
 	 int Balance;
 	 Bias=Angle-ZHONGZHI;       //===求出平衡的角度中值 和机械相关
 	 Balance=kp*Bias+Gyro*kd;   //===计算平衡控制的电机PWM  PD控制   kp是P系数 kd是D系数 
@@ -78,16 +83,15 @@ int velocity(int encoder_left,int encoder_right)
 {  
     static float Velocity,Encoder_Least,Encoder,Movement;
 	  static float Encoder_Integral,Target_Velocity;
-	  float kp=80,ki=0.4;
+	  float kp=65,ki=0.325;
 	  //=============遥控前进后退部分=======================// 
 
 		Target_Velocity=90; 
 		if(1==Flag_Qian)    	Movement=Target_Velocity/Flag_sudu;	         //===前进标志位置1 
-		else if(1==Flag_Hou)	{Movement=-Target_Velocity/Flag_sudu;printf("!!!");}       //===后退标志位置1
+		else if(1==Flag_Hou)	{Movement=-Target_Velocity/Flag_sudu;}       //===后退标志位置1
 	  else  Movement=0;	
    //=============速度PI控制器=======================//	
 		Encoder_Least =(Encoder_Left+Encoder_Right)-0;                    //===获取最新速度偏差==测量速度（左右编码器之和）-目标速度（此处为零）
-		//printf("Encoder_Left:%d Encoder_Right:%d\r\n",Encoder_Left,Encoder_Right);
 		Encoder *= 0.8;		                                                //===一阶低通滤波器       
 		Encoder += Encoder_Least*0.2;	                                    //===一阶低通滤波器    
 		Encoder_Integral +=Encoder;                                       //===积分出位移 积分时间：10ms
@@ -263,20 +267,23 @@ int Pick_Up(float Acceleration,float Angle,int encoder_left,int encoder_right)
         else 
         count0=0;		
         if(count0>10)				
-		    flag=1,count0=0; 
+		    flag=1,count0=0;
 	 } 
 	 if(flag==1)                                                                  //进入第二步
 	 {
 		    if(++count1>200)       count1=0,flag=0;                                 //超时不再等待2000ms
-	      if(Acceleration>26000&&(Angle>(-20+ZHONGZHI))&&(Angle<(20+ZHONGZHI)))   //条件2，小车是在0度附近被拿起
-		    flag=2; 
+				//printf("Acceleration: %f",Acceleration);
+	      if(Acceleration>18000&&(Angle>(-20+ZHONGZHI))&&(Angle<(20+ZHONGZHI)))   //条件2，小车是在0度附近被拿起
+				flag=2; 
+				
 	 } 
 	 if(flag==2)                                                                  //第三步
 	 {
 		  if(++count2>100)       count2=0,flag=0;                                   //超时不再等待1000ms
 	    if(myabs(encoder_left+encoder_right)>135)                                 //条件3，小车的轮胎因为正反馈达到最大的转速   
       {
-				flag=0;                                                                                     
+				flag=0;                                                                     
+				//printf("Up3");				
 				return 1;                                                               //检测到小车被拿起
 			}
 	 }
@@ -294,19 +301,21 @@ int Put_Down(float Angle,int encoder_left,int encoder_right)
    return 0;	                 
 	 if(flag==0)                                               
 	 {
-	      if(Angle>(-10+ZHONGZHI)&&Angle<(10+ZHONGZHI)&&encoder_left==0&&encoder_right==0)         //条件1，小车是在0度附近的
-		    flag=1; 
+	      if(Angle>(-10+ZHONGZHI)&&Angle<(10+ZHONGZHI)&&myabs(encoder_left)<=2&&myabs(encoder_right)<=2)         //条件1，小车是在0度附近的
+		    flag=1;
+				printf("Down1");
 	 } 
 	 if(flag==1)                                               
 	 {
-		  if(++count>50)                                          //超时不再等待 500ms
+		  if(++count>100)                                          //超时不再等待 1000ms
 		  {
 				count=0;flag=0;
 		  }
-	    if(encoder_left>3&&encoder_right>3&&encoder_left<60&&encoder_right<60)                //条件2，小车的轮胎在未上电的时候被人为转动  
+	    if((encoder_left>2||encoder_right>2)&&encoder_left<60&&encoder_right<60)                //条件2，小车的轮胎在未上电的时候被人为转动  
       {
 				flag=0;
 				flag=0;
+				printf("Down2");
 				return 1;                                             //检测到小车被放下
 			}
 	 }
