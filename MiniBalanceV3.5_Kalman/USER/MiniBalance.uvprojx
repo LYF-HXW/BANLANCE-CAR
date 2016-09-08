@@ -10,7 +10,6 @@
       <TargetName>MiniBalance</TargetName>
       <ToolsetNumber>0x4</ToolsetNumber>
       <ToolsetName>ARM-ADS</ToolsetName>
-      <pCCUsed>5060061::V5.06 update 1 (build 61)::ARMCC</pCCUsed>
       <TargetOption>
         <TargetCommonOption>
           <Device>STM32F103C8</Device>
@@ -85,8 +84,6 @@
             <UserProg2Name></UserProg2Name>
             <UserProg1Dos16Mode>0</UserProg1Dos16Mode>
             <UserProg2Dos16Mode>0</UserProg2Dos16Mode>
-            <nStopA1X>0</nStopA1X>
-            <nStopA2X>0</nStopA2X>
           </AfterMake>
           <SelectedForBatchBuild>0</SelectedForBatchBuild>
           <SVCSIdString></SVCSIdString>
@@ -230,7 +227,6 @@
             <useUlib>0</useUlib>
             <EndSel>0</EndSel>
             <uLtcg>0</uLtcg>
-            <nSecure>0</nSecure>
             <RoSelD>3</RoSelD>
             <RwSelD>3</RwSelD>
             <CodeSel>0</CodeSel>
@@ -365,15 +361,11 @@
             <uSurpInc>0</uSurpInc>
             <uC99>0</uC99>
             <useXO>0</useXO>
-            <v6Lang>0</v6Lang>
-            <v6LangP>0</v6LangP>
-            <vShortEn>0</vShortEn>
-            <vShortWch>0</vShortWch>
             <VariousControls>
               <MiscControls></MiscControls>
               <Define>STM32F10X_ HD,USE_STDPERIPH_DRIVER</Define>
               <Undefine></Undefine>
-              <IncludePath>..\USER;..\MiniBalance_COER;..\STM32F10x_FWLib\inc;..\MiniBalance_HARDWARE;..\SYSTEM;..\SYSTEM\delay;..\SYSTEM\sys;..\SYSTEM\usart;..\MiniBalance_HARDWARE\DMP;..\MiniBalance_HARDWARE\IIC;..\MiniBalance_HARDWARE\MPU6050;..\MiniBalance_HARDWARE\ENCODER;..\MiniBalance_HARDWARE\OLED;..\MiniBalance\show;..\MiniBalance_HARDWARE\LED;..\MiniBalance_HARDWARE\KEY;..\MiniBalance_HARDWARE\ADC;..\MiniBalance_HARDWARE\MOTOR;..\MiniBalance_HARDWARE\TIMER;..\MiniBalance_HARDWARE\EXTI;..\MiniBalance_HARDWARE\DataScope_DP;..\MiniBalance\filter;..\MiniBalance_HARDWARE\USART2</IncludePath>
+              <IncludePath>..\USER;..\MiniBalance_COER;..\STM32F10x_FWLib\inc;..\MiniBalance_HARDWARE;..\SYSTEM;..\SYSTEM\delay;..\SYSTEM\sys;..\SYSTEM\usart;..\MiniBalance_HARDWARE\DMP;..\MiniBalance_HARDWARE\IIC;..\MiniBalance_HARDWARE\MPU6050;..\MiniBalance_HARDWARE\ENCODER;..\MiniBalance_HARDWARE\OLED;..\MiniBalance\show;..\MiniBalance_HARDWARE\LED;..\MiniBalance_HARDWARE\KEY;..\MiniBalance_HARDWARE\ADC;..\MiniBalance_HARDWARE\MOTOR;..\MiniBalance_HARDWARE\TIMER;..\MiniBalance_HARDWARE\EXTI;..\MiniBalance_HARDWARE\DataScope_DP;..\MiniBalance\filter;..\MiniBalance_HARDWARE\USART2;..\MiniBalance\CONTROL</IncludePath>
             </VariousControls>
           </Cads>
           <Aads>

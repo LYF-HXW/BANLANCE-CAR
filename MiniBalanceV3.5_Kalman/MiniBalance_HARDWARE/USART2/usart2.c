@@ -1,8 +1,10 @@
 #include "usart2.h"
+#include "usart.h"
   /**************************************************************************
 作者：平衡小车之家
 我的淘宝小店：http://shop114407458.taobao.com/
 **************************************************************************/
+#define MAX_DATA_LEN 100
 u8 Usart3_Receive;
  u8 mode_data[8];
  u8 six_data_stop[3]={0X59,0X59,0X59};  //停止数据样本
@@ -51,34 +53,84 @@ void uart2_init(u32 bound)
   USART_Cmd(USART2, ENABLE);                    //使能串口2 
 }
 
+void USART2_SendChar(u8 b)
+{
+	 USART_SendData(USART2,b);
+		while (USART_GetFlagStatus(USART2,USART_FLAG_TC) == RESET);
+}
 /**************************************************************************
 函数功能：串口3接收中断
 入口参数：无
 返回  值：无
 **************************************************************************/
 void USART2_IRQHandler(void)
-{	
+{		uint8_t data;
+		static uint16_t checksum;
+		static uint8_t  buffer[MAX_DATA_LEN] = {0};
+		static int cur=0;
+		static uint8_t datalen1;
+		static short data_len;
+		static enum Recstate								   		//状态机 
+		{
+		RECFF1,RECFF2,SENDID,RECLEN1,RECLEN2,RECSEL,RECCHECK
+		} rs485Recstate = RECFF1;
 	if(USART_GetITStatus(USART2, USART_IT_RXNE) != RESET) //接收到数据
 	{	  
-	 static	int uart_receive=0;//蓝牙接收相关变量
-	 uart_receive=USART_ReceiveData(USART3); 
-	 mode_data[0]=uart_receive;
-		printf("In");
-			if(mode_data[0]==six_data_start[0]	&&mode_data[1]==six_data_start[1]	 &&mode_data[2]==six_data_start[2])
-		{	
-			Flag_Stop=0;   //3击低速挡 小车关闭电机
-			mode_data[0]=0;	mode_data[1]=0;	mode_data[2]=0;	
-		}
-			if(mode_data[0]==six_data_stop[0]			&&mode_data[1]==six_data_stop[1]			&&mode_data[2]==six_data_stop[2]			)
-		{	
-			Flag_Stop=1;   //3击高速挡 小车启动电机
-			mode_data[0]=0;	mode_data[1]=0;	mode_data[2]=0;	
-		}
-		if(uart_receive==0x59)  Flag_sudu=2;  //低速挡（默认值）
-		if(uart_receive==0x58)  Flag_sudu=1;  //高速档
+		 data = USART_ReceiveData(USART2);		
+		 switch (rs485Recstate) 
+		 {
+			case RECFF1:
+				if (data == 0xff)	  
+				{
+					rs485Recstate = RECFF2;
+					checksum=0;		
+					cur = 0;								//校验位清零
+				}
+				break;
+	
+			case RECFF2:
+				
+				if (data == 0xff)
+					rs485Recstate = RECLEN1;
+				else
+					rs485Recstate = RECFF1;
+				break;
+	
+			case RECLEN1:		
+				checksum += data;
+				datalen1 = data;
+				rs485Recstate = RECLEN2;	  
+				break;
 		
-		mode_data[2]=mode_data[1];
-		mode_data[1]=mode_data[0];
+			case RECLEN2:	
+				checksum += data;			 				
+				data_len = (short)datalen1 << 8	 | data;
+				rs485Recstate = RECSEL;	  
+				break;
+	
+			case RECSEL:
+				checksum += data;
+				buffer[cur++] = data;
+				if(cur >= data_len)
+					rs485Recstate = RECCHECK;
+				break;
+	
+			case RECCHECK:
+				checksum=checksum%256;
+				if(data == checksum)
+				{		
+					handle_data(buffer);			
+					checksum=0;	
+					rs485Recstate = RECFF1;	 
+				}
+				
+				else
+					rs485Recstate = RECFF1;
+				break;
+			 default:
+					rs485Recstate = RECFF1;
+			}	   	 
+		
 		USART_ClearITPendingBit(USART2, USART_IT_RXNE);
 	}  											 
 } 

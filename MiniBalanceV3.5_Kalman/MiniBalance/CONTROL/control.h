@@ -7,7 +7,8 @@
 **************************************************************************/
 #define PI 3.14159265
 #define ZHONGZHI 0.24
-extern	int Balance_Pwm,Velocity_Pwm,Turn_Pwm;
+extern int Balance_Pwm,Velocity_Pwm,Turn_Pwm;
+extern float Target_Velocity,Turn_Target;
 int EXTI15_10_IRQHandler(void);
 int balance(float angle,float gyro);
 int velocity(int encoder_left,int encoder_right);

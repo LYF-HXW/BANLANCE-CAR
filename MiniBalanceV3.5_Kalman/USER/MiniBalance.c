@@ -1,12 +1,13 @@
 #include "stm32f10x.h"
 #include "sys.h"
+#include "usart.h"
   /**************************************************************************
 作者：平衡小车之家
 我的淘宝小店：http://shop114407458.taobao.com/
 **************************************************************************/
 u8 Way_Angle=2;                             //获取角度的算法，1：四元数  2：卡尔曼  3：互补滤波 
 u8 Flag_Qian,Flag_Hou,Flag_Left,Flag_Right,Flag_sudu=2; //蓝牙遥控相关的变量
-u8 Flag_Stop=1;                 //停止标志位和 显示标志位 默认停止 显示打开
+u8 Flag_Stop=1,jianyan=0;                 //停止标志位和 显示标志位 默认停止 显示打开
 int Encoder_Left,Encoder_Right;             //左右编码器的脉冲计数
 int Moto1,Moto2;                            //电机PWM变量 应是Motor的 向Moto致敬	
 float Angle_Balance,Gyro_Balance,Gyro_Turn; //平衡倾角 平衡陀螺仪 转向陀螺仪
@@ -14,7 +15,8 @@ float Show_Data_Mb;                         //全局显示变量，用于显示需要查看的数
 u8 delay_50,delay_flag;         //默认情况下，不开启避障功能，长按用户按键2s以上可以进入避障模式
 float Acceleration_Z;                      //Z轴加速度计  
 int main(void)
-  { 
+ { 
+		
 		delay_init();	    	            //=====延时函数初始化	
 		uart_init(115200);	            //=====串口初始化为
 		JTAG_Set(JTAG_SWD_DISABLE);     //=====关闭JTAG接口
@@ -30,6 +32,7 @@ int main(void)
 	  DMP_Init();                     //=====初始化DMP 
 	  MiniBalance_EXTI_Init();        //=====MPU6050 5ms定时中断初始化
 		
+		 
     while(1)
 	   {
 				  delay_flag=1;	
